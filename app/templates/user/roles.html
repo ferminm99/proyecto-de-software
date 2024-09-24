@@ -1,0 +1,49 @@
+<div class="form-group col-md-12">
+    <label for="profile" class="col-form-label text-color">Roles</label>
+    <div class="d-flex align-items-center justify-content-between">
+        <select class="form-control col-md-7" type="text" name="profile" id="roleSelected" placeholder="Clave" required>
+            <!-- <option value="1" selected>Operador</option> -->
+            <!-- <option value="2">Administrador</option> -->
+            <!-- <option value="role3">role 3</option> -->
+            <!-- <option value="role4">role 4</option> -->
+            {% for i in roles %}
+            <option id="nameRole-{{i.id}}" value="{{ i.id }}"> {{ i.name }} </option>
+            {% endfor %}
+
+        </select>
+        <button type="button" class="btn btn-md btn-primary large col-md-4 " onclick="addRole()">
+            Agregar
+        </button>
+
+    </div>
+    <br>
+    <ul class="{{cs.className}} list-group" id="listRoles">
+    </ul>
+</div>
+<script>
+    var roles = []
+    function addRole(role = $("#roleSelected")[0].value) {
+        if (roles.find(r => r == role)) {
+            alert("El rol ya esta agregado");
+            return false;
+        }
+        roles.push(role);
+        let li = document.createElement("li");
+        li.setAttribute("id", role)
+        li.setAttribute("class", "list-group-item d-flex justify-content-between");
+        $(li).append(document.createElement("div").innerHTML = $("#nameRole-" + role)[0].innerHTML);
+        let deleteButton = document.createElement("button");
+        deleteButton.setAttribute("type", "button")
+        deleteButton.setAttribute("class", "btn btn-sm btn-danger large col-md-12")
+        deleteButton.addEventListener("click", () => {
+            deleteRole(li.id, role)
+        })
+        deleteButton.innerHTML = "Eliminar"
+        $(li).append($(document.createElement("div")).append(deleteButton));
+        $("#listRoles").append(li);
+    }
+    function deleteRole(id, role) {
+        $("#" + id)[0].remove();
+        roles.splice(roles.indexOf(role), 1);
+    }
+</script>

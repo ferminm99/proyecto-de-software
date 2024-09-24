@@ -1,0 +1,167 @@
+{% extends "auth/layoutAuthForm.html" %}
+{% block head %}
+{{ super() }}
+
+{% endblock %}
+{% block content %}
+<br>
+{{super()}}
+
+{% endblock %}
+
+{% block headerName %}<h3 class="text-center text-color">Crear usuario</h3>{% endblock %}
+{% block cardBody %}
+<form id="newUserForm" action="{{ url_for('user_create') }}" method="POST" onsubmit="return validarFormulario()">
+    <div class="row">
+        <div class="form-group col-md-8">
+            <label for="email_address" class="col-form-label text-color">E-Mail</label>
+            <input class="form-control" name="email" placeholder="Correo" required autofocus>
+        </div>
+        <div class="form-group col-md-4">
+            <br>
+            <br>
+
+            <input type="checkbox" id="gridCheck" name="active" checked>
+            <label for="gridCheck">Activo / Bloqueado</label>
+        </div>
+        <div class="form-group col-md-6">
+            <label for="username" class="col-form-label text-color">Nombre de usuario</label>
+            <input class="form-control" type="text" name="username" placeholder="Nombre del usuario" required>
+        </div>
+        <div class="form-group col-md-6">
+            <label for="password" class="col-form-label text-color">Contraseña</label>
+            <input class="form-control" type="password" name="password" placeholder="Contraseña" required>
+        </div>
+        <div class="form-group col-md-6">
+            <label for="name" class="col-form-label text-color">Nombre</label>
+            <input class="form-control" type="text" name="first_name" placeholder="Nombre" required>
+        </div>
+        <div class="form-group col-md-6">
+            <label for="lastname" class="col-form-label text-color">Apellido</label>
+            <input class="form-control" type="text" name="last_name" placeholder="Apellido" required>
+        </div>
+        {% include "user/roles.html" %}
+
+    </div>
+    <br>
+    <div class="col-md-12" style="padding: 0;">
+        <button type="button" onclick="registrar()" class="btn btn-lg btn-primary large col-md-12 ">
+            Registrar
+        </button>
+
+    </div>
+</form>
+
+<div class="fixed-bottom d-flex justify-content-end" style="width: 30%; z-index: 1 !important; ">
+    <div id="wrongEmailUsername" class="alert alert-danger alert-dismissible fade" style="width: 100%;" role="alert">
+        <strong>Credenciales repetidas</strong> Pruebe con otro nombre de usuario y/o correo.
+    </div>
+</div>
+<div class="fixed-bottom d-flex justify-content-end" style="width: 30%; z-index: 1 !important; ">
+    <div id="wrongFirstName" class="alert alert-danger alert-dismissible fade" style="width: 100%;" role="alert">
+        <strong>Primer nombre invalido</strong>
+    </div>
+</div>
+<div class="fixed-bottom d-flex justify-content-end" style="width: 30%; z-index: 1 !important; ">
+    <div id="wrongLastName" class="alert alert-danger alert-dismissible fade" style="width: 100%;" role="alert">
+        <strong>Apellido invalido</strong>
+    </div>
+</div>
+<div class="fixed-bottom d-flex justify-content-end" style="width: 30%; z-index: 1 !important; ">
+    <div id="wrongActPassword" class="alert alert-danger alert-dismissible fade" style="width: 100%;" role="alert">
+        <strong>Contraseña incorrecta</strong> Verifique si la ingreso correctamente.
+    </div>
+</div>
+<div class="fixed-bottom d-flex justify-content-end" style="width: 30%; z-index: 1 !important; ">
+    <div id="Actualizado" class="alert alert-success alert-dismissible fade" style="width: 100%;" role="alert">
+        <strong> Usuario creado! </strong>
+    </div>
+</div>     
+
+<script>
+    function isValidEmail(mail) {
+        return /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/.test(mail);
+    }
+    function isOnlyText(value){
+        return /^[a-zA-ZÀ-ÿ\u00f1\u00d1]+(\s*[a-zA-ZÀ-ÿ\u00f1\u00d1]*)*[a-zA-ZÀ-ÿ\u00f1\u00d1]+$/.test(value)
+    }
+    function validateForm() {
+        let form = $("#newUserForm").serializeArray()
+        for (let i = 0; i < form.length; i++) {
+            const element = form[i];
+            if (element.value == "") {
+                alert("no puede haber campos vacios")
+                console.log(form)
+                return false;
+            }
+        }
+       
+        if(!isValidEmail(form[0]['value'])){
+            alert("formato de email invalido")
+            return false
+        }
+        if((document.getElementById('gridCheck')).checked){
+            if(!isOnlyText(form[4]['value'])){
+                alert("formato de nombre invalido")
+                return false
+            }
+            if(!isOnlyText(form[5]['value'])){
+                alert("formato de apellido invalido")
+                return false
+            }
+        }else{
+            if(!isOnlyText(form[3]['value'])){
+                alert("formato de nombre invalido")
+                return false
+            }
+            if(!isOnlyText(form[4]['value'])){
+                alert("formato de apellido invalido")
+                return false
+            }
+        }
+        
+
+        return true;
+    }
+    function registrar() {
+        if (!validateForm()) {
+            return false;
+        }
+        let formData = JSON.stringify($("#newUserForm").serializeJSON());
+        let data = $.extend({}, JSON.parse(formData), { "roles": roles })
+        $.ajax({
+            url: "{{ url_for('user_create') }}",
+            type: "POST",
+            data
+        }).done(response => {
+
+            if (response == "mailExistente") {
+                $('#wrongEmailUsername').addClass('show')
+                setTimeout(() => {
+                    $('#wrongEmailUsername').removeClass('show')
+                }, 1500)
+                // alert("El email o el nombre de usuario ingresado ya existen")
+            }else if (response == "nombreInvalido") {
+                $('#"wrongFirstName"').addClass('show')
+                setTimeout(() => {
+                    $('#"wrongFirstName"').removeClass('show')
+                }, 1500)
+            } else if (response == "apellidoInvalido") {
+                $('#"wrongLastName"').addClass('show')
+                setTimeout(() => {
+                    $('#"wrongLastName"').removeClass('show')
+                }, 1500)
+            }
+            else if(response == 'correcto'){
+                $('#Actualizado').addClass('show')
+                setTimeout(() => {
+                    $('#Actualizado').removeClass('show')
+                }, 1500)
+                window.location = "{{ url_for('user_index') }}"
+            } 
+        })
+    }
+</script>
+
+
+{% endblock %}

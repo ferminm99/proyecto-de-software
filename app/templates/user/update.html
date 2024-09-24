@@ -1,0 +1,241 @@
+{% extends "auth/layoutAuthForm.html" %}
+{% block head %}
+{{ super() }}
+
+{% endblock %}
+{% block content %}
+<br>
+{{super()}}
+
+{% endblock %}
+
+{% block headerName %}<h3 class="text-center text-color">Editar Datos</h3>{% endblock %}
+{% block cardBody %}
+
+<form id="editUserForm" action="{{ url_for('user_create') }}" method="POST" onsubmit="return validateForm()">
+    <div class="row" id="columna">
+        {% if user.id == myid %}
+            {% include "user/emailboxRO.html" %}
+            {% include "user/usernameboxRO.html" %}
+            {% include "user/passwordButton.html" %}
+            {% include "user/firstnamebox.html" %}
+            {% include "user/lastnamebox.html" %}
+        {% else %}
+            {% include "user/emailbox.html" %}
+            {% include "user/usernamebox.html" %}
+            {% include "user/passwordButton.html" %}
+            {% include "user/firstnamebox.html" %}
+            {% include "user/lastnamebox.html" %}
+            {% if have_permission(["role_edit"]) %}
+                {% include "user/roles.html" %}
+            {% endif %} 
+            {% include "user/checkbox.html" %}
+            {% if user.approved == 0 %}
+                {% include "user/checkboxApproved.html" %}
+            {% endif %}
+        {% endif %} 
+    </div>
+    <br>
+    <div class="d-flex">
+        <div class="col-md-6" style="padding: 5px;">
+            {% if user.id == myid %}
+                <button type="button" class="btn btn-md btn-primary col-md-12" onclick="updateMyUser()">
+                    Actualizar
+                </button>
+            {% else %}
+                <button type="button" class="btn btn-md btn-primary col-md-12" onclick="updateUser()">
+                    Actualizar
+                </button>
+            {% endif %}
+        </div> 
+        <div class="col-md-6" style="padding: 5px;">
+            <a class="btn btn-md btn-danger col-md-12" onclick="back()">
+                Cancelar
+            </a>
+        </div> 
+    </div>
+</form>
+<div class="fixed-bottom d-flex justify-content-end" style="width: 30%; z-index: 1 !important; ">
+    <div id="wrongEmailUsername" class="alert alert-danger alert-dismissible fade" style="width: 100%;" role="alert">
+        <strong>Credenciales repetidas</strong> Pruebe con otro nombre de usuario y/o correo.
+    </div>
+</div>
+<div class="fixed-bottom d-flex justify-content-end" style="width: 30%; z-index: 1 !important; ">
+    <div id="wrongFirstName" class="alert alert-danger alert-dismissible fade" style="width: 100%;" role="alert">
+        <strong>Primer nombre invalido</strong>
+    </div>
+</div>
+<div class="fixed-bottom d-flex justify-content-end" style="width: 30%; z-index: 1 !important; ">
+    <div id="wrongLastName" class="alert alert-danger alert-dismissible fade" style="width: 100%;" role="alert">
+        <strong>Apellido invalido</strong>
+    </div>
+</div>
+<div class="fixed-bottom d-flex justify-content-end" style="width: 30%; z-index: 1 !important; ">
+    <div id="wrongActPassword" class="alert alert-danger alert-dismissible fade" style="width: 100%;" role="alert">
+        <strong>Contraseña incorrecta</strong> Verifique si la ingreso correctamente.
+    </div>
+</div>
+<div class="fixed-bottom d-flex justify-content-end" style="width: 30%; z-index: 1 !important; ">
+    <div id="Actualizado" class="alert alert-success alert-dismissible fade" style="width: 100%;" role="alert">
+        <strong> Se actualizo! </strong>
+    </div>
+</div>           
+<div class="fixed-bottom d-flex justify-content-end" style="width: 30%; z-index: 1 !important; ">
+    <div id="SinRol" class="alert alert-danger alert-dismissible fade" style="width: 100%;" role="alert">
+        <strong>Falta asignar rol</strong> Este usuario ahora habilitado debe tener rol
+    </div>
+</div>
+
+<script>
+    {% if user.id != myid %}
+        jQuery(function(){
+            '{% if have_permission(["role_edit"]) %}';
+                '{% for role in user.roles %}';
+                    addRole('{{ role.id }}');
+                '{% endfor %}';
+            '{% endif %}';
+        });
+    {% endif %}
+    function isValidEmail(mail) {
+        return /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/.test(mail);
+    }
+    function isOnlyText(value) {
+        return /^[a-zA-ZÀ-ÿ\u00f1\u00d1]+(\s*[a-zA-ZÀ-ÿ\u00f1\u00d1]*)*[a-zA-ZÀ-ÿ\u00f1\u00d1]+$/.test(value)
+    }
+    function validateForm() {
+        let form = $("#editUserForm").serializeArray()
+        for (let i = 0; i < form.length; i++) {
+            const element = form[i];
+            if (element.value == "") {
+                alert("no puede haber campos vacios")
+                console.log(form)
+                return false;
+            }
+        }
+        if (!isValidEmail(form[0]['value'])) {
+            alert("El formato del mail ingresado no es valido")
+            return false
+        }
+        if (!isOnlyText(form[2]['value'])) {
+            alert("formato del nombre ingresado no es valido")
+            return false
+        }
+        if (!isOnlyText(form[3]['value'])) {
+            alert("formato del apellido ingresado no es valido")
+            console.log(form)
+            return false
+        }
+        return true;
+    }
+    function updateMyUser() {
+        if (!validateForm()) {
+            return false;
+        }
+        if(typeof(roles) === undefined){
+            console.log("sd")
+        }
+        let formData = JSON.stringify($("#editUserForm").serializeJSON());
+        let data
+        try {
+            data = $.extend({}, JSON.parse(formData), {});
+        } catch (error) {
+            console.log(error)
+            data = $.extend({}, JSON.parse(formData), {});
+        }
+        $.ajax({
+            url: "{{ url_for('myuser_update') }}",
+            type: "PUT",
+            data
+        }).done(response => {
+            if (response == "mailExistente") {
+                $('#wrongEmailUsername').addClass('show')
+                setTimeout(() => {
+                    $('#wrongEmailUsername').removeClass('show')
+                }, 1500)
+            } else if (response == "nombreInvalido") {
+                $('#"wrongFirstName"').addClass('show')
+                setTimeout(() => {
+                    $('#"wrongFirstName"').removeClass('show')
+                }, 1500)
+            } else if (response == "apellidoInvalido") {
+                $('#"wrongLastName"').addClass('show')
+                setTimeout(() => {
+                    $('#"wrongLastName"').removeClass('show')
+                }, 1500)
+            } 
+            else if(response == 'Actualizado'){
+                $('#Actualizado').addClass('show')
+                setTimeout(() => {
+                    $('#Actualizado').removeClass('show')
+                }, 1500)
+            }
+        })    
+    }
+    function updateUser() {
+        if (!validateForm()) {
+            return false;
+        }
+        if(typeof(roles) === undefined){
+            console.log("sd")
+        }
+        var idUsuario = "{{ user.id }}";
+        let formData = JSON.stringify($("#editUserForm").serializeJSON());
+        let data
+        try {
+            data = $.extend({}, JSON.parse(formData), { roles, idUsuario});
+        } catch (error) {
+            console.log(error)
+            data = $.extend({}, JSON.parse(formData), { idUsuario });
+        }
+        $.ajax({
+            url: "{{ url_for('user_update') }}",
+            type: "PUT",
+            data
+        }).done(response => {
+            if (response == "mailExistente") {
+                $('#wrongEmailUsername').addClass('show')
+                setTimeout(() => {
+                    $('#wrongEmailUsername').removeClass('show')
+                }, 1500)
+            } else if (response == "nombreInvalido") {
+                $('#"wrongFirstName"').addClass('show')
+                setTimeout(() => {
+                    $('#"wrongFirstName"').removeClass('show')
+                }, 1500)
+            } else if (response == "apellidoInvalido") {
+                $('#"wrongLastName"').addClass('show')
+                setTimeout(() => {
+                    $('#"wrongLastName"').removeClass('show')
+                }, 1500)
+            }
+            else if(response == 'SinRol'){
+                $('#SinRol').addClass('show')
+                setTimeout(() => {
+                    $('#SinRol').removeClass('show')
+                }, 1500)
+            }
+            else if(response == 'Actualizado'){
+                $('#Actualizado').addClass('show')
+                setTimeout(() => {
+                    $('#Actualizado').removeClass('show')
+                }, 1500)
+                window.location = "{{ url_for('user_index') }}";
+            }
+        })    
+    }
+    function back(){
+        window.location = "{{ url_for('user_index') }}";
+    }
+    function editPassword() {
+        var idUsuario = "{{ user.id }}";
+        var myid = "{{ myid }}";
+        if(idUsuario == myid) {
+            window.location = "{{ url_for('mypassword_edit') }}";
+        } else {
+            window.location = "{{ url_for('password_edit') }}?idUsuario="+idUsuario;
+        }
+    }
+</script>
+
+
+{% endblock %}

@@ -1,0 +1,150 @@
+{% extends "layout.html" %}
+{% block title %}Agregar Recorrido de Evacuación{% endblock %}
+{% block head %}
+{{ super() }}
+<meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css"
+    integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ=="
+    crossorigin="" />
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
+    crossorigin="anonymous"></script>
+
+<script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"
+    integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew=="
+    crossorigin=""></script>
+{% endblock %}
+
+{% block content %}
+<div class="row {{cs.className}}">
+    <div class="col-12 col-lg-9">
+    <div id="mimapa" style="height: 600px; z-index: 0;"></div>
+   
+    </div>
+    <div class="col-12 col-lg-3">
+         <button class="btn btn-primary w-100" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasExample"
+        aria-controls="offcanvasExample">
+        Agregar Ruta
+    </button>
+        <ul class="{{cs.className}} list-group" id="listPoints"></ul>
+    </div>
+</div>
+<div class="{{cs.className}} offcanvas offcanvas-start" tabindex="-1" id="offcanvasExample" aria-labelledby="offcanvasExampleLabel">
+    <div class="{{cs.className}} offcanvas-header">
+        <h5 class="offcanvas-title" id="offcanvasExampleLabel">Detalles de la ruta:</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+        <form id="formRoute" action="" method="POST">
+            <div class="mb-3">
+                <label for="Routename" class="form-label">Nombre de la ruta</label>
+                <input type="text" class="form-control" id="name" name="name" required>
+            </div>
+            <div class="mb-3">
+                <label for="Estado"> Estado</label>
+                <select class="form-select" aria-label="Default select example" name="state">
+                    <option value="1">Publicado</option>
+                    <option value="0">Despublicado</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label for="descripcion">Descripción</label>
+                <textarea rows="5" id="descripcion" class="form-control" name="description"></textarea>
+            </div>
+            <button type="button" class="btn btn-light" onclick="registrar()">Agregar</button>
+           <!-- <button type="button" class="btn btn-light">Cancelar</button>-->
+        </form>
+
+    </div>
+</div>
+
+<script>
+    var puntos = []
+    var markers = []
+    var ruta
+    var mymap = L.map('mimapa').setView([-34.92114, -57.95502], 13);
+    L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw', {
+        maxZoom: 25,
+        attribution: 'Datos del mapa de &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a>, ' + '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' + 'Imágenes © <a href="https://www.mapbox.com/">Mapbox</a>',
+        id: 'mapbox/streets-v11'
+    }).addTo(mymap);
+
+    mymap.on('click', e => {
+        let latLng = mymap.mouseEventToLatLng(e.originalEvent);
+        console.log(latLng);
+        var punto = L.marker([latLng.lat, latLng.lng]).addTo(mymap);
+        punto.bindPopup("<b>Inicio</b>");
+        markers.push(punto)
+        puntos.push([latLng.lat, latLng.lng]);
+
+        /*---Agregar al mapa-----*/
+        createItemHtml(latLng)
+        /*----------------------*/
+        
+        console.log(puntos)
+        ruta = L.polyline(puntos, { color: "red" }).addTo(mymap);
+        //rutas.push(ruta)
+        console.log("Ruta",ruta)
+    });
+
+    function createItemHtml(latLng){
+        /*agregar a la lista*/
+        let lista =  document.getElementById('listPoints')
+        let item = document.createElement('li')
+        item.classList.add("list-group-item")
+        let texto = document.createElement('p')
+        texto.classList.add("w-75")
+        texto.innerHTML= "Lat: "+latLng.lat+ " - "+ " Long:"+ latLng.lng
+        let icon = document.createElement('button')
+        icon.innerHTML='<span class="bi bi-x"></span>'
+        icon.setAttribute('onclick', 'remove(event.target.parentNode.parentNode,'+ latLng.lat + ','+ latLng.lng+')')
+        item.appendChild(texto)
+        item.appendChild(icon)
+        lista.appendChild(item)
+    }
+
+    function remove(item, lat, long){
+        //remuevo las lineas del mapa
+        var mapruta = document.querySelector("#mimapa > div.leaflet-pane.leaflet-map-pane > div.leaflet-pane.leaflet-overlay-pane > svg > g")
+        //console.log(mapruta)
+        mapruta.innerHTML = ""
+        
+        //Remueve de la lista html
+        let lista = document.getElementById('listPoints')
+        lista.removeChild(item)
+        //me guardo el indice 
+        let index = puntos.findIndex( punto => punto[0] === lat && punto[1] === long)
+        
+        //Remueve del arreglo de puntos
+        puntos = puntos.filter( punto => punto[0] != lat && punto[1] != long)
+        console.log(puntos)
+
+        markers[index].remove(); 
+        markers.splice(index,1)
+
+        ruta = L.polyline(puntos, { color: "red" }).addTo(mymap);
+      
+    }
+    
+    
+    function registrar() {
+      /*  if (!validateForm()) {
+            return false;
+        }*/
+        let formData = JSON.stringify($("#formRoute").serializeJSON());
+        let data = $.extend({}, JSON.parse(formData), {"coordinates": JSON.stringify(puntos) })
+        $.ajax({
+            url: "{{ url_for('evacuationroute_create') }}",
+            type: "POST",
+            data
+        }).done(response => {
+            console.log(response);
+            window.location = "{{ url_for('evacuationroute_index') }}"
+        })
+    }
+</script>
+{% endblock %}

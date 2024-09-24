@@ -1,0 +1,121 @@
+{% extends "auth/layoutAuthForm.html" %}
+{% block headerName %}<h3 class="text-center text-color">Recorrido de Evacuación</h3>{% endblock %}
+
+{% block cardBody %}
+<form id="editERouteForm" action="{{ url_for('evacuationroute_update') }}" method="POST" onsubmit="return validateForm()">
+    <div class="row" id="columna">
+        <div class="form-group col-md-12">
+            <label for="name" class="col-form-label text-color">Nombre</label>
+            <input id="nameInput"  class="form-control" type="text" name="name" value="{{ route.name }}"  required>
+        </div>
+        <div class="form-group col-md-12">
+            <label for="description" class="col-form-label text-color">Descripción</label>
+            <textarea id="descriptionInput"  class="form-control" type="text" name="description">{{ route.description }}</textarea>
+        </div>
+       
+        <div class="checkbox form-group col-md-6"><br><br>
+            <label>
+                {% if route.state == 1 %}
+                    <input type="checkbox" name="state" value="off" checked> Publicado
+                {% else %}
+                    <input type="checkbox" name="state" value="off"> Publicado
+                {% endif %}
+            </label>
+        </div>
+
+        <div class="checkbox form-group col-md-6"><br><br>
+            <a type="button" class="btn btn-md btn-primary col-md-12" href="{{ url_for('evacuationroute_route')}}?id={{route.id}}">
+                Editar Recorrido
+            </a>
+        </div>
+        
+        <div class="d-flex">
+            <div class="col-md-6" style="padding: 5px;">
+                <button type="button" class="btn btn-md btn-primary col-md-12" onclick="update()">
+                    Actualizar
+                </button>
+            </div> 
+            <div class="col-md-6" style="padding: 5px;">
+                <a class="btn btn-md btn-danger col-md-12" onclick="back()">
+                    Cancelar
+                </a>
+            </div> 
+        </div>
+    </div> 
+</form>
+
+
+<div class="fixed-bottom d-flex justify-content-end" style="width: 30%; z-index: 1 !important; ">
+    <div id="wrongEmail" class="alert alert-danger alert-dismissible fade" style="width: 100%;" role="alert">
+        <strong>Credenciales repetidas</strong> Pruebe con otro correo.
+    </div>
+</div>
+
+<div class="fixed-bottom d-flex justify-content-end" style="width: 30%; z-index: 1 !important; ">
+    <div id="withoutText" class="alert alert-danger alert-dismissible fade" style="width: 100%;" role="alert">
+        <strong>Debe completar todos los campos</strong>.
+    </div>
+</div>
+
+<div class="fixed-bottom d-flex justify-content-end" style="width: 30%; z-index: 1 !important; ">
+    <div id="Actualizado" class="alert alert-success alert-dismissible fade" style="width: 100%;" role="alert">
+        <strong> Se actualizo! </strong>
+    </div>
+</div>
+
+<script>
+    function isValidEmail(mail) {
+        return /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/.test(mail);
+    }
+    function validateForm() {
+        
+        let form = $("#editERouteForm").serializeArray()
+        for (let i = 0; i < form.length; i++) {
+            const element = form[i];
+            if (element.value == "") {
+                alert("no puede haber campos vacios")
+                console.log(form)
+                return false;
+            }
+        }
+        
+        return true;
+    }
+    function update() {
+        if (!validateForm()) {
+            return false;
+        }
+        let formData = JSON.stringify($("#editERouteForm").serializeJSON());
+        let data = $.extend({}, JSON.parse(formData), {"id":"{{route.id}}"});
+        $.ajax({
+            url: "{{ url_for('evacuationroute_update') }}",
+            type: "PUT",
+            data
+        }).done(response => {
+            if (response == "mailExistente") {
+                $('#wrongEmail').addClass('show')
+                setTimeout(() => {
+                    $('#wrongEmail').removeClass('show')
+                }, 1500)
+            } if (response == "campoVacio") {
+                $('#withoutText').addClass('show')
+                setTimeout(() => {
+                    $('#withoutText').removeClass('show')
+                }, 1500)
+            }
+            else if(response == 'Actualizado'){
+                $('#Actualizado').addClass('show')
+                setTimeout(() => {
+                    $('#Actualizado').removeClass('show')
+                }, 1500)
+                window.location = "{{ url_for('evacuationroute_index') }}";
+            }
+        })
+    }
+
+    function back() {
+        window.location = "{{ url_for('evacuationroute_index') }}";
+    }
+</script>
+
+{% endblock %}

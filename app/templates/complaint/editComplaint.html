@@ -1,0 +1,242 @@
+{% extends "auth/layoutAuthForm.html" %}
+
+{% block head %}
+
+    {{super()}}
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css"
+    integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ=="
+    crossorigin=""/>
+
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"
+    integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew=="
+    crossorigin="">
+    </script>
+{% endblock %}
+{% block headerName %}<h3 class="text-center text-color">Denuncia</h3>{% endblock %}
+
+{% block cardBody %}
+<form id="editComplaint" action="{{ url_for('complaint_update') }}" method="POST" >
+    <div class="row" id="columna">
+        <div class="form-group col-md-6">
+            <label for="name" class="col-form-label text-color">Nombre</label>
+            <input id="nameInput"  class="form-control" type="text" name="name" value="{{ complaint.title }}"  readonly>
+        </div>
+        <div class="form-group col-md-6">
+            <label for="state" class="col-form-label text-md-left text-color">Categoria</label>
+            <select class="form-control" name="category" placeholder="Estado de la denuncia" required value='{{complaint.id_category}}'>
+                {% for x in range(0,(categories.count())) %} 
+                    {% if complaint.id_category == x %}
+                        <option  selected value="{{ categories[x].id }}">{{ categories[x].type }}</option>
+                    {% else %}
+                        <option value="{{ categories[x].id }}">{{ categories[x].type }}</option>
+                    {% endif %}
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group col-md-12">
+            <label for="descriptionComplaint" class="col-form-label text-color">Descripcion</label>
+            <textarea class="form-control" id="descriptionComplaint" name="descriptionComplaint" rows="3" value="" readonly>{{ complaint.description }}</textarea>
+        </div>
+        <div class="form-group col-md-6">
+            <label for="telephone" class="col-form-label text-color">Telefono</label>
+            <input id="telephoneInput" class="form-control" type="number" name="telephone" value="{{ complaint.telephone }}"  readonly>
+        </div>
+        <div class="form-group col-md-6">
+            <label for="email_address" class="col-form-label text-color">E-Mail</label>
+            <input type="email" id="emailInput" class="form-control" name="email" value="{{ complaint.email }}" readonly >
+        </div>
+        <!-- esto es lo que hay que editar -->
+        <div class="form-group col-md-12">
+            <label for="state" class="col-form-label text-md-left text-color">Estado de la denuncia</label>
+            {% if isAdmin(user) or complaint.id_user_assigned == id %} 
+            <select class="form-control" name="state" placeholder="Estado de la denuncia" required value='{{complaint.id_state}}'>
+            {% else %}
+            <select class="form-control" name="state" placeholder="Estado de la denuncia" required value='{{complaint.id_state}}' disabled>
+            {% endif %}
+                {% set states = ["Estado", "Sin confirmar", "En curso", "Resuelta", "Cerrada"] %}
+                {% for x in range(1,5) %} 
+                    {% if complaint.id_state == x %}
+                        <option  selected value="{{ x }}">{{ states[x] }}</option>
+                    {% else %}
+                        <option value="{{ x }}">{{ states[x] }}</option>
+                    {% endif %}
+                {% endfor %}
+            </select>
+        </div>
+        <hr>
+        <h5> Seguimiento de la denuncia: </h5>     
+        <div class="form-group col-md-12">
+            <label for="name" class="col-form-label text-color">Usuario asignado</label>
+            {% if isAdmin(user) %}
+            <select class="form-control" id ="id_user_assigned" name="id_user_assigned" placeholder="Usuario asignado" required value='{{complaint.id_user_assigned}}'>
+            {% else %} 
+            <select class="form-control" id="id_user_assigned" name="id_user_assigned" placeholder="Usuario asignado" required value='{{complaint.id_user_assigned}}' disabled>
+            {% endif %} 
+                <option value="" selected>Debe elegir usuario a asignar</option>
+                {% for x in range(0,(users.count())) %} 
+                    {% if complaint.id_user_assigned == users[x].id %}
+                        <option  selected value="{{ users[x].id }}">{{ users[x].username }}</option>
+                    {% else %}
+                        <option value="{{ users[x].id }}">{{ users[x].username }}</option>
+                    {% endif %}
+                {% endfor %}
+            </select>
+        </div>
+        <!--if complaint.id_user_assigned == id -->
+        <div class="form-group col-md-12">
+            <label for="description" class="col-form-label text-color">Descripcion</label>
+            {% if complaint.id_user_assigned == id and ((complaint.id_state | int) != 4) %}
+            <textarea class="form-control" name="description" id="description" rows="3" value="{{ followUp.description }}"></textarea>
+            {% else %}
+            <textarea class="form-control" id="description" name="description" rows="3" value="{{ followUp.description }}" readonly></textarea>
+            {% endif %}
+        </div>
+        
+        <div class="col-md-12" style="padding: 5px;">
+            <button id="panelOne" type="button" class="btn btn-md btn-primary col-md-12" data-toggle="modal" data-target="#seguimientos" href="#myModal">
+                Seguimientos
+            </button>
+        </div> 
+
+        <!--endif-->
+        <hr>
+        <h5> Coordenadas: </h5>
+        
+        <div class="form-group col-md-6">
+            <label for="latitude" class="col-form-label text-color">Latitud</label>
+            <input id="latitudeInput" class="form-control" type="text" name="latitude" value="{{ complaint.latitude }}" readonly>
+        </div>
+        <div class="form-group col-md-6">
+            <label for="length" class="col-form-label text-color">Longitud</label>
+            <input id="lengthInput" class="form-control" type="text" name="length" value="{{ complaint.length }}" readonly>
+        </div>
+    </div>
+        
+
+        <!-- Edicion de cordenadas -->
+        <div id="mimapa" style="height: 300px; width:100% ; z-index: 0;"></div>
+        <script>
+
+            var mymap = L.map('mimapa').setView([-34.92114,-57.95502], 13);
+            L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw', {
+            maxZoom: 25,
+            attribution: 'Datos del mapa de &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a>, ' + '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' + 'Imágenes © <a href="https://www.mapbox.com/">Mapbox</a>', 
+            id: 'mapbox/streets-v11'
+            }).addTo(mymap);
+
+            var marker = L.marker([ (document.getElementById('latitudeInput').value), document.getElementById('lengthInput').value]).addTo(mymap);
+           
+        </script>
+        <!-- Fin coordenadas -->
+        
+        <div class="d-flex">
+            <div class="col-md-6" style="padding: 5px;">
+                <button type="button" class="btn btn-md btn-primary col-md-12" onclick="update()">
+                    Actualizar
+                </button>
+            </div> 
+            <div class="col-md-6" style="padding: 5px;">
+                <a class="btn btn-md btn-danger col-md-12" onclick="back()">
+                    Cancelar
+                </a>
+            </div> 
+        </div>
+    </div> 
+</form>
+
+<div class="fixed-bottom d-flex justify-content-end" style="width: 30%; z-index: 1 !important; ">
+    <div id="Actualizado" class="alert alert-success alert-dismissible fade" style="width: 100%;" role="alert">
+        <strong> Se actualizo! </strong>
+    </div>
+</div>
+
+<div class="fixed-bottom d-flex justify-content-end" style="width: 30%; z-index: 1 !important; ">
+    <div id="Error" class="alert alert-success alert-dismissible fade" style="width: 100%;" role="alert">
+        <strong> Debe asignar un usuario para poder actualizar </strong>
+    </div>
+</div>
+
+
+<div class="modal fade" id="seguimientos" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="accordion" id="accordionExample">
+
+                    {% for o in followsUp  %}
+                    <div class="card">
+                    
+                        <div class="card-header" id="heading{{o.id}}">
+                          <h2 class="mb-0">
+                              
+                            <button class="btn  {{cs.className}} " type="button" data-toggle="collapse" data-target="#collapse{{o.id}}" aria-expanded="true" aria-controls="collapse{{i}}">
+                              Seguimiento de 
+                        {{ getUser(o.id_author).username }} en la fecha {{ o.created_at}}
+            
+                            </button>
+                            
+                          </h2>
+                        </div>
+                    
+                      <div id="collapse{{o.id}}" class="collapse show" aria-labelledby="heading{{o.id}}" data-parent="#accordionExample">
+                        <div class="card-body {{cs.className}}">
+                        {{ o.description}}
+                        </div>
+                      </div>
+                     
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div> 
+</div>
+
+<script>
+    '{% if isAdmin(user) %}';
+        var getTo = "{{ url_for('complaint_update') }}";
+    '{% else %}'
+        var getTo = "{{ url_for('complaint_update_operator') }}";
+    '{% endif %}';
+    function update() {
+        var idComplaint = "{{ complaint.id }}";
+        console.log("data: "+idComplaint);
+        let formData = JSON.stringify($("#editComplaint").serializeJSON());
+        let data = $.extend({}, JSON.parse(formData), { idComplaint });
+        $.ajax({
+            url: getTo,
+            type: "PUT",
+            data
+        }).done(response => {
+            if(response == 'Actualizado'){
+                $('#Actualizado').addClass('show')
+                setTimeout(() => {
+                    $('#Actualizado').removeClass('show')
+                }, 1500)
+                window.location = "{{ url_for('complaint_index') }}";
+            }else if (response == 'Error'){
+                $('#Error').addClass('show')
+                setTimeout(() => {
+                    $('#Error').removeClass('show')
+                }, 1500)
+            }
+        })
+    }
+
+    $(document).ready(function () {
+            $('#panelOne').click(function () {
+                $('#seguimientos').show();
+            });
+        });
+
+
+    function back() {
+        window.location = "{{ url_for('complaint_index') }}";
+    }
+</script>
+
+{% endblock %}

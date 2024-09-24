@@ -1,0 +1,210 @@
+{% extends "layout.html" %}
+{% block title %}Usuarios{% endblock %}
+{% block head %}
+  {{ super() }}
+{% endblock %}
+{% block content %}
+<br>
+<div class="container">
+
+  <h1 class="text-color text-center">Usuarios 
+    {% if have_permission(['user_new']) %}
+      <a href="{{ url_for('user_new') }}"><i class="bi bi-person-plus-fill" ></i></a>
+    {% endif %}
+  </h1>
+  <hr>
+    <div class="d-flex justify-content-center">
+      <div class="custom-control custom-radio custom-control-inline">
+        {% if activo == "2" %}
+          <input type="radio" class="custom-control-input" value="2" id="defaultInline1" name="activo" checked>
+        {% else %}
+          <input type="radio" class="custom-control-input" value="2" id="defaultInline1" name="activo">
+        {% endif %}
+        <label class="custom-control-label" for="defaultInline1">Todos</label>
+      </div>
+      <div class="custom-control custom-radio custom-control-inline">
+        {% if activo == "1" %}
+          <input type="radio" class="custom-control-input" value="1" id="defaultInline2" name="activo" checked>
+        {% else %}
+          <input type="radio" class="custom-control-input" value="1" id="defaultInline2" name="activo">
+        {% endif %}  
+        <label class="custom-control-label" for="defaultInline2">Activos</label>
+      </div>
+      <div class="custom-control custom-radio custom-control-inline">
+        {% if activo == "0" %}
+          <input type="radio" class="custom-control-input" value="0" id="defaultInline3" name="activo" checked>
+        {% else %}
+          <input type="radio" class="custom-control-input" value="0" id="defaultInline3" name="activo">
+        {% endif %}
+        <label class="custom-control-label" for="defaultInline3">No activos</label>
+      </div>
+      <div class="custom-control custom-radio custom-control-inline ">
+        <button type="button" onclick="filter()" class="{{cs.className}} btn btn-sm btn-primary" style="margin-bottom:10px;" name="filtrar" > Filtrar </button>
+      </div>
+    </div>  
+      <div class="d-flex justify-content-end">
+      <input type="text" id="myCustomSearchBox" class="form-control" placeholder="Escriba usuario a buscar">
+    </div>
+  {% autoescape false %}
+  <table id="myTable" class="{{cs.className}} table table-striped table-bordered" style="text-align:center" width="100%">
+    <thead>
+      <tr class="text-color">
+        <th> Nombre de usuario </th>
+        <th> Nombre</th>
+        <th> Apellido </th>
+        <th> E-mail </th>
+        <th> Estado </th>
+        <th> Aprobacion </th>
+        <th> Modificar </th>
+        <th> Borrar </th>
+      </tr>
+    </thead>
+  </table>
+  {% endautoescape %}
+  <br>
+</div>
+
+<div class="modal fade" id="myModal" role="dialog">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="{{cs.className}} modal-content">
+      <div class="{{cs.className}} modal-header">
+        <p>Borrar usuario</p>
+      </div>
+      <div class="modal-body">
+        <p color="black">¿Estas seguro que queres borrar el usuario?</p>
+      </div>
+      <div class="modal-footer">
+        <a class="btn btn-primary" id="confirmBtn" href="" >Si</a>
+          <a class="btn btn-danger" id="cancelBtn" data-dismiss="modal">No</a>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="fixed-bottom d-flex justify-content-end" style="width: 30%; z-index: 1 !important; ">
+  <div id="errorEliminando" class="alert alert-danger alert-dismissible fade" style="width: 100%;" role="alert">
+      <strong>Error al borrar usuario</strong> {{ error }}
+  </div>
+</div>
+
+
+<br>
+<br>
+  <script>
+    var table;
+    //Agarro el orden de criterio y lo convierto en int
+    orderCriterion = '{{orderCriterion}}';
+    orderCriterion = parseInt(orderCriterion);
+    var activo = $("input[name='activo']:checked").val();;
+    function filter(params) {
+      activo = $("input[name='activo']:checked").val();
+      table.ajax.reload();
+    }
+
+    var textRenderer = $.fn.dataTable.render.text;
+    $(document).ready( function () {
+      var pages = '{{ rows }}';
+      table = $('#myTable').DataTable({ 
+        "pageLength": parseInt(pages),
+        "responsive": true,
+        "processing": true,
+        "order": [[ orderCriterion, "asc" ]],
+        "serverSide": true, 
+        "ajax":{
+            "url": "{{ url_for('get_user') }}",
+            "type": "GET",
+            "contentType": "application/json",
+            "data": function ( d ){
+              return $.extend( {}, d, {
+                "activo":$("input[name='activo']:checked").val()
+              } );
+            }
+        },
+        "columnDefs": [ 
+        {
+          "bSortable" : true,
+          "aTargets" : [orderCriterion],
+        },
+        {
+          "bSortable":false,
+          "aTargets" : [0,1,2,3],
+          "render": $.fn.dataTable.render.text() //evita XSS
+        }, 
+        {
+          "bSortable":false,
+          "targets": 4,
+          "render": function ( data, type, row, meta ) {
+            if(data == 1){
+              return 'Activo';
+            }else{
+              return 'Bloqueado';
+            }
+          }
+        },
+        {
+          "bSortable":false,
+          "targets": 5,
+          "render": function ( data, type, row, meta ) {
+            if(data == 1){
+              return 'Confirmada';
+            }else{
+              return 'Sin confirmar';
+            }
+          }
+        },
+        {
+          "bSortable":false,
+          "targets": 6,
+          "render": function ( data, type, row, meta ) {
+            '{% if have_permission(["user_manage"]) %}';
+              return '<a href="{{ url_for("user_edit") }}?idUsuario='+data+'" class="{{cs.className}} btn btn-sm btn-info"> <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-pencil-fill" fill="currentColor" xmlns="http://www.w3.org/2000/svg"> <path fill-rule="evenodd" d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708l-3-3zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207l6.5-6.5zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.499.499 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11l.178-.178z"/> </svg> </a>';
+            '{% else %}';
+              return '<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-pencil-fill" fill="currentColor" xmlns="http://www.w3.org/2000/svg"> <path fill-rule="evenodd" d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708l-3-3zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207l6.5-6.5zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.499.499 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11l.178-.178z"/> </svg>';
+            '{% endif %}';
+          }
+        },
+        {
+          "bSortable":false,
+          "targets": 7,
+          "render": function ( data, type, row, meta ) {
+            '{% if have_permission(["user_destroy"]) %}';
+              if(data != "{{id}}"){
+                return '<a href="{{ url_for("user_destroy") }}?idUsuario='+data+'" data-toggle="modal" data-target="#myModal" id="borradoDeUsuario" class="{{cs.className}} btn btn-sm btn-info borrado"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/><path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/></svg></a>';
+              }else{
+                return '<svg xmlns="http://www.w3.org/2000/svg" width="1em" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/><path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/></svg>';
+              }
+            '{% else %}';
+              return '<svg xmlns="http://www.w3.org/2000/svg" width="1em" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/><path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/></svg>';
+            '{% endif %}';
+          }
+        } ],
+        "dom":"lrtip", //esconde search del datatable, ahora puedo meter el propio
+        "bLengthChange": false,
+      });
+      $('#myCustomSearchBox').keyup(function(){  
+        table.search(this.value).draw(); //search propio
+      });
+
+
+      if("{{error}}" != ''){
+        $("#errorEliminando").addClass('show')
+        setTimeout(() => {
+          $('#errorEliminando').removeClass('show')
+        }, 2500)
+        
+      }
+      
+
+      // cartel para confirmar borrado
+      $("#myTable").on('click','#borradoDeUsuario', function(){
+          var targetUrl = $(this).attr("href");
+          var confirmBtnEle = $("#confirmBtn");
+          confirmBtnEle.attr('href',targetUrl);
+
+      });
+
+    });
+  </script>
+
+{% endblock %}

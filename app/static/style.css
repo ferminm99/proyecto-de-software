@@ -1,0 +1,329 @@
+@import url('https://fonts.googleapis.com/css?family=Montserrat:400,600,700');
+@import url('https://fonts.googleapis.com/css?family=Catamaran:400,800');
+/*--ESTILOS GENERALES--*/
+*{
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	text-decoration: none;
+	border: none;
+	outline: none;
+}
+
+body {
+  background-color: #4B7399;
+  font-family: 'Montserrat', Helvetica, sans-serif;
+  font-size: 14px;
+}
+
+#content{
+  padding-top: 2em;
+}
+
+.clear {
+  clear: both;
+  height: 0;
+  overflow: hidden;
+}
+
+#footer {
+  width: 75%;
+  margin: 0 auto;
+  text-align: center;
+}
+
+#container {
+  width: 75%;
+  margin: 0 auto;
+  background-color: rgb(52, 236, 98);
+  padding: 20px 40px;
+  border: solid 1px black;
+  margin-top: 20px;
+  min-height: 400px;
+}
+
+a.link {
+  text-transform: uppercase;
+  font-size: 10px;
+  background-color: #92a4ad;
+  padding: 10px 15px;
+  border-radius: 0;
+  color: #416475;
+  display: inline-block;
+  margin-right: 5px;
+  margin-bottom: 5px;
+  line-height: 1.5;
+  text-decoration: none;
+  margin-top: 50px;
+  letter-spacing: 1px;
+}
+
+/*--PALETA DE COLORES--*/
+.indigo_pink.topnav, .indigo_pink.card-header { 
+  background-color: #3f51b5;
+  overflow: hidden;
+  display: flex; 
+}
+
+.indigo_pink{
+  background-color: #fafafa;
+  color: rgba(0,0,0,.87);
+}
+
+.indigo_pink.text-color{
+  color: rgba(0,0,0,.87);
+}
+.indigo_pink.card, .indigo_pink .container{
+  background-color: #f0f0f0;
+  color: rgba(0,0,0,.87);
+  border-color: #303030;
+}
+.indigo_pink form button,.indigo_pink.btn{
+  background-color: #3f51b5;
+  border: none;
+}
+
+.indigo_pink.table{
+  background-color: #f2f2f2;
+}
+
+.indigo_pink form input:focus, .indigo_pink form select:focus{
+  background-color: #fff;
+  outline: 0;
+  box-shadow: 0 0 0 .2rem #3f51b5;
+}
+
+.indigo_pink .container a i{
+  color: #3f51b5;
+}
+
+#myTable_paginate .indigo_pink ul li.active a{
+  background-color: #3f51b5;
+  border-color: #3f51b5;
+}
+
+/*-------------------------------*/
+.pink_blue_grey.topnav, .pink_blue_grey.card-header, .pink_blue_grey.modal-header, .pink_blue_grey.offcanvas-header {
+  background-color: #e91e63;
+  overflow: hidden;
+  display: flex; 
+}
+.pink_blue_grey, .pink_blue_grey.modal-content, .pink_blue_grey.offcanvas{
+  background-color: #303030;
+  color: #fff;
+}
+.pink_blue_grey.text-color{
+  color: #fff;
+}
+.pink_blue_grey.card, .pink_blue_grey .container{
+  background-color: #3d3d3d;
+  color: #fff;
+  border-color: lightslategray;
+}
+.pink_blue_grey form button,.pink_blue_grey.btn{
+  background-color: #e91e63;
+  border: none;
+}
+.pink_blue_grey.table{
+  background-color: #f2f2f2;
+}
+.pink_blue_grey form input:focus, .pink_blue_grey form select:focus{
+    background-color: #fff;
+    outline: 0;
+    box-shadow: 0 0 0 .2rem #e91e63;
+}
+
+.pink_blue_grey .container a i{
+  color: #e91e63;
+}
+
+.pink_blue_grey.list-group li{
+  color: #303030;
+}
+
+#myTable_paginate .pink_blue_grey ul li.active a{
+  background-color: #e91e63;
+  border-color: #e91e63;
+}
+/*--------------------------------*/
+.dark_grey.topnav, .dark_grey.card-header{
+  background-color: #20232a;
+  overflow: hidden;
+  display: flex; 
+}
+.dark_grey{
+  background-color: rgb(247, 247, 247);
+  color: rgba(0,0,0,.87);
+}
+.dark_grey.text-color{
+  color: rgba(0,0,0,.87);
+}
+
+.dark_grey.card, .dark_grey .container{
+  background-color: #f0f0f0;
+  color: rgba(0,0,0,.87);
+  border: solid 0.1em #a1a1a1;
+}
+
+/*--FIN PALETA DE COLORES--*/
+
+/*--FORMULARIO PALETA DE COLORES--*/
+
+.contentDiv{
+  height: 80px; 
+  width: 100px; 
+  border:solid 1px; 
+  text-align:center;
+  margin: 0 auto;
+}
+
+.headerDiv{
+  height: 15px; 
+  width: 100%;
+}
+
+.checkDiv{
+  text-align: center;
+}
+
+/*--FIN FORMULARIO PALETA DE COLORES--*/
+
+/*--BARRA DE NAVEGACION--*/
+
+ .topnav {
+    overflow: hidden;
+    display: flex;  
+    }
+
+  /* Style the links inside the navigation bar */
+.topnav a {
+    float: left;
+    display: block;
+    color: #f2f2f2;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+    font-size: 17px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    }
+
+
+.topnav a:hover {
+    text-decoration: none;
+    background-color: #ddd;
+    color: #2A2F3D;
+  }
+  
+  /* Add an active class to highlight the current page */
+  .topnav a.active {
+    background-color: #FF6732;
+    color: white;
+  }
+
+  #icono{
+      color: white;
+  }
+  
+  /* Hide the link that should open and close the topnav on small screens */
+  .topnav .icon {
+    display: none;
+  }
+
+  .submenu {
+    margin-left: auto;
+    /* float: left; */
+    overflow: hidden;
+  }
+
+  
+  /* Dropdown button */
+  .submenu .submenubtn {
+    font-size: 17px;
+    border: none;
+    outline: none;
+    color: #f2f2f2;
+    padding: 14px 16px;
+    background-color: inherit;
+    font-family: inherit;
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+  
+  /* Dropdown content (hidden by default) */
+  .submenu-content {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+  }
+  
+  /* Links inside the dropdown */
+  .submenu-content a {
+    float:none ;
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+    text-align: left;
+    color: #f2f2f2;
+    background-color: #2A2F3D;
+  }
+  .topnav a:hover, .submenu:hover .submenubtn {
+    background-color: #555;
+    color: #f2f2f2;
+  }
+
+  .topnav a.active:hover{
+    background-color: #cc5327
+  }
+  /* Add a grey background color to dropdown links on hover */
+
+  .submenu-content a:hover {
+    background-color: #555;
+    color: #f2f2f2;
+    border: solid 1px #2A2F3D ;
+  }
+  /* Show the dropdown menu on hover */
+  .submenu:hover .submenu-content {
+    display: block;
+  } /*
+  /*--FIN BARRA DE NAVEGACION--*/
+
+/*--MEDIA QUERYS PARA RESPONSIVE--*/
+/*--BARRA DE NAVEGACION--*/
+/* When the screen is less than 600 pixels wide, hide all links, except for the first one ("Home"). Show the link that contains should open and close the topnav (.icon) */
+/* When the screen is less than 600 pixels wide, hide all links, except for the first one ("Home"). Show the link that contains should open and close the topnav (.icon) */
+@media screen and (max-width: 600px) {
+    .topnav a:not(:first-child), .submenu .submenubtn {
+      display: none;
+    }
+    .topnav a.icon {
+      float: right;
+      display: block;
+    }
+  }
+  
+  /* The "responsive" class is added to the topnav with JavaScript when the user clicks on the icon. This class makes the topnav look good on small screens (display the links vertically instead of horizontally) */
+  @media screen and (max-width: 600px) {
+    .topnav.responsive {position: relative;
+    display: block;}
+    .topnav.responsive a.icon {
+      position: absolute;
+      right: 0;
+      top: 0;
+    }
+    .topnav.responsive a {
+      float: none;
+      display: block;
+      text-align: left;
+    }
+    .topnav.responsive .submenu {float: none;}
+    .topnav.responsive .submenu-content {position: relative;}
+    .topnav.responsive .submenu .submenubtn {
+      display: block;
+      width: 100%;
+      text-align: left;
+    }
+  }
+  /*--FIN BARRA DE NAVEGACION--*/

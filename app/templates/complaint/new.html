@@ -1,0 +1,214 @@
+{% extends "auth/layoutAuthForm.html" %}
+
+{% block head %}
+
+    {{super()}}
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css"
+    integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ=="
+    crossorigin=""/>
+
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"
+    integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew=="
+    crossorigin="">
+    </script>
+{% endblock %}
+{% block headerName %}<h3 class="text-center text-color">Denuncia</h3>{% endblock %}
+
+{% block cardBody %}
+<form id="createComplaintForm" action="{{ url_for('complaint_update') }}" method="POST" >
+    <div class="row" id="columna">
+        <div class="form-group col-md-6">
+            <label for="title" class="col-form-label text-color">Titulo</label>
+            <input id="titleInput"  class="form-control" type="text" name="title" value="">
+        </div>
+        <div class="form-group col-md-6">
+            <label for="state" class="col-form-label text-md-left text-color">Categoria</label>
+            <select id="categoryInput" class="form-control" name="category" placeholder="Estado de la denuncia">
+                {% for x in range(0,(categories.count())) %}     
+                    <option value="{{ categories[x].id }}">{{ categories[x].type }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group col-md-12">
+            <label for="description" class="col-form-label text-color">Descripcion</label>
+            <textarea id="descriptionInput" class="form-control" name="description" rows="3" value="" ></textarea>
+        </div>
+        <hr>
+        <div class="form-group col-md-6">
+            <label for="firstname" class="col-form-label text-color">Nombre denunciante</label>
+            <input id="firstnameInput"  class="form-control" type="text" name="firstname" value="">
+        </div>
+        <div class="form-group col-md-6">
+            <label for="lastname" class="col-form-label text-color">Apellido denunciante</label>
+            <input id="lastnameInput"  class="form-control" type="text" name="lastname" value="">
+        </div>
+        <div class="form-group col-md-6">
+            <label for="telephone" class="col-form-label text-color">Telefono</label>
+            <input id="telephoneInput" class="form-control" type="number" name="telephone" value="" >
+        </div>
+        <div class="form-group col-md-6">
+            <label for="email_address" class="col-form-label text-color">E-Mail</label>
+            <input type="email" id="emailInput" class="form-control" name="email" value="" >
+        </div>
+        <hr>
+        <h5> Coordenadas: </h5>
+        
+        <div class="form-group col-md-6">
+            <label for="latitude" class="col-form-label text-color">Latitud</label>
+            <input id="latitudeInput" class="form-control" type="text" name="latitude" value="" readonly required>
+        </div>
+        <div class="form-group col-md-6">
+            <label for="length" class="col-form-label text-color">Longitud</label>
+            <input id="lengthInput" class="form-control" type="text" name="length" value="" readonly required>
+        </div>
+    </div>
+
+        <!-- Edicion de cordenadas -->
+        <div id="mimapa" style="height: 300px; width:100% ; z-index: 0;"></div>
+        <script>
+
+            var mymap = L.map('mimapa').setView([-34.92114,-57.95502], 13);
+            L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw', {
+            maxZoom: 25,
+            attribution: 'Datos del mapa de &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a>, ' + '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' + 'Imágenes © <a href="https://www.mapbox.com/">Mapbox</a>', 
+            id: 'mapbox/streets-v11'
+            }).addTo(mymap);
+
+            var marker = L.marker([ (document.getElementById('latitudeInput').value), document.getElementById('lengthInput').value]).addTo(mymap);
+            
+            mymap.on('click', e =>{
+                let latLng = mymap.mouseEventToLatLng(e.originalEvent);  
+                let result =confirm(`Desea agregar un Punto de encuentro en esta ubicacion: ${latLng}` );
+                if (result){
+                    mymap.removeLayer(marker);
+                    marker = L.marker(mymap.mouseEventToLatLng(e.originalEvent)).addTo(mymap); 
+                    document.getElementById('latitudeInput').value=( latLng.lat);
+                    document.getElementById('lengthInput').value=(latLng.lng);
+                    }
+                }); 
+        </script>
+        <!-- Fin coordenadas -->
+        
+        <div class="d-flex">
+            <div class="col-md-6" style="padding: 5px;">
+                <button type="button" class="btn btn-md btn-primary col-md-12" onclick="create()">
+                    Crear
+                </button>
+            </div> 
+            <div class="col-md-6" style="padding: 5px;">
+                <a class="btn btn-md btn-danger col-md-12" onclick="back()">
+                    Cancelar
+                </a>
+            </div> 
+        </div>
+    </div> 
+</form>
+
+<div class="fixed-bottom d-flex justify-content-end" style="width: 30%; z-index: 1 !important; ">
+    <div id="Creada" class="alert alert-success alert-dismissible fade" style="width: 100%;" role="alert">
+        <strong> Denuncia creada! </strong>
+    </div>
+</div>
+<div class="fixed-bottom d-flex justify-content-end" style="width: 30%; z-index: 1 !important; ">
+    <div id="CampoVacio" class="alert alert-danger alert-dismissible fade" style="width: 100%;" role="alert">
+        <strong> No puede haber campos vacios! </strong>
+    </div>
+</div>
+<div class="fixed-bottom d-flex justify-content-end" style="width: 30%; z-index: 1 !important; ">
+    <div id="NomAplInvalido" class="alert alert-danger alert-dismissible fade" style="width: 100%;" role="alert">
+        <strong> El formato del nombre y/o apellido no es valido! </strong>
+    </div>
+</div>
+<div class="fixed-bottom d-flex justify-content-end" style="width: 30%; z-index: 1 !important; ">
+    <div id="EmailInvalido" class="alert alert-danger alert-dismissible fade" style="width: 100%;" role="alert">
+        <strong> El formato del email no es valido! </strong>
+    </div>
+</div>
+<script>
+    function isValidEmail(mail) {
+        return /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/.test(mail);
+    }
+    function isOnlyText(value) {
+        return /^[a-zA-ZÀ-ÿ\u00f1\u00d1]+(\s*[a-zA-ZÀ-ÿ\u00f1\u00d1]*)*[a-zA-ZÀ-ÿ\u00f1\u00d1]+$/.test(value)
+    }
+    function validateForm() {
+        let form = $("#createComplaintForm").serializeArray()
+        for (let i = 0; i < form.length; i++) {
+            const element = form[i];
+            if (element.value == "") {
+                $('#CampoVacio').addClass('show')
+                setTimeout(() => {
+                    $('#CampoVacio').removeClass('show')
+                }, 1500)
+                return false;
+            }
+        }
+        if (!isValidEmail(form[6]['value'])) {
+            $('#EmailInvalido').addClass('show')
+            setTimeout(() => {
+                $('#EmailInvalido').removeClass('show')
+            }, 1500)
+            return false
+            return false
+        }
+        if (!isOnlyText(form[3]['value']) | (!isOnlyText(form[4]['value']))) {
+            $('#NomAplInvalido').addClass('show')
+            setTimeout(() => {
+                $('#NomAplInvalido').removeClass('show')
+            }, 1500)
+            return false
+        }
+        return true;
+    }
+    function create() {
+        if (!validateForm()) {
+            return false;
+        }
+        const myJSON = { 
+            "categoria_id": Number($("#categoryInput").val()),
+            "coordenadas": $("#latitudeInput").val()+", "+$("#lengthInput").val(),
+            "apellido_denunciante": $("#lastnameInput").val(),
+            "nombre_denunciante": $("#firstnameInput").val(),
+            "telcel_denunciante": $("#telephoneInput").val(),
+            "email_denunciante": $("#emailInput").val(),
+            "titulo": $("#titleInput").val(),
+            "descripcion": $("#descriptionInput").val()};
+        fetch("{{ url_for('api.denuncias.create') }}",{
+            method:'POST',
+            body: JSON.stringify(myJSON),
+            headers: {
+                'Content-Type': 'application/json'// AQUI indicamos el formato
+            }
+        }).then(function(response) {
+            $('#Creada').addClass('show')
+            setTimeout(() => {
+                $('#Creada').removeClass('show')
+            }, 1500)
+            window.location = "{{ url_for('home') }}";
+        })
+        /*$.ajax({
+            url: "{{ url_for('api.denuncias.create') }}",
+            type: "POST",
+            json: formData,
+            dataType: "json"
+        }).done(response => {
+            console.log(responce);
+            if(response == 'Creada'){
+                $('#Creada').addClass('show')
+                setTimeout(() => {
+                    $('#Creada').removeClass('show')
+                }, 1500)
+            }
+        })*/
+    }
+
+    function back() {
+        window.location = "{{ url_for('complaint_index') }}";
+    }
+</script>
+
+{% endblock %}

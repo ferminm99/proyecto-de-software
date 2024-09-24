@@ -1,0 +1,55 @@
+*{
+    margin: 0%;
+}
+#content{
+    margin: 0%;
+    padding: 0%;
+}
+#carrousel{
+	filter: brightness(50%);
+    z-index: -100;
+    width: 100%;
+    height: 100;
+}
+  
+#cartelInicial{
+    color: white;
+    z-index: 0 ;
+    position: absolute;
+    margin-left: auto;
+    margin-right: auto;
+    padding-top: 12em;
+    left: 0;
+    right: 0;
+    text-align: center;
+}
+
+#botonMapa{
+    position: absolute;
+    z-index: 100;
+    margin-top: auto;
+    margin-bottom: auto;
+}
+
+.carousel-item {
+    height: 25vh;
+    min-height: 300px;
+    background: no-repeat center center scroll;
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+  }
+  
+  .card-columns .card {
+    display: inline-block;
+    width: 100%;
+  }
+  
+  .card-img-top {
+    width: 100%;
+    height: 200px !important; 
+    border-top-left-radius: calc(0.25rem - 1px);
+    border-top-right-radius: calc(0.25rem - 1px);
+  }
+

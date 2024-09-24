@@ -1,0 +1,11 @@
+<div class="d-flex justify-content-center align-items-center" style="height: 100%;">{% if not have_permission(["user_unblockable"]) %}
+    <div class="checkbox">
+        <label>
+            {% if user.active == 1 %}
+                <input type="checkbox" name="active" value="off" checked> Activo
+            {% else %}
+                <input type="checkbox" name="active" value="off"> Activo
+            {% endif %}
+        </label>
+    </div>
+{% endif %}</div>

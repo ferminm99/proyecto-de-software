@@ -1,0 +1,112 @@
+{% extends "auth/layoutAuthForm.html" %}
+{% block content %}
+<br>
+{{super()}}
+
+{% endblock %}
+{% block headerName %}<h3 class="text-center text-color">Configuracion del sistema</h3>{% endblock %}
+
+{% block cardBody %}
+<!--Formulario para cambiar los estilos-->
+<form action="{{ url_for('palette_update') }}" method="POST">
+  <div class="row text-center">
+    {% for palette in palettes %}
+    <div class="col-sm">
+      <div class="form-check form-check-inline checkDiv ">
+        <label class="form-check-label" for="{{palette.className}}">
+          <p>{{palette.name}}</p>
+          <div class="contentDiv" style="background-color: {{palette.bgColor}}; ">
+            <div class="headerDiv" style="background-color: {{palette.secondColor}};"></div>
+            <p style="color: {{palette.textColor}};">Texto</p>
+          </div>
+          {% if palette.active == 1 %}
+          <input class="form-check-input" type="radio" id="{{palette.className}}" name="checkStyles"
+            value="{{ palette.id }}" checked>
+          {% else %}
+          <input class="form-check-input" type="radio" id="{{palette.className}}" name="checkStyles"
+            value="{{ palette.id }}">
+          {% endif %}
+        </label>
+
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  <hr class="clear">
+  <div>
+    <div class="d-flex justify-content-center">
+      <button type="submit" class="btn btn-primary">
+        Cambiar
+      </button>
+    </div>
+  </div>
+</form>
+<!-----Fin------>
+<hr class="clear">
+
+<form action="{{ url_for('settings_update') }}" method="POST">
+  <!-- Agregar lo de la paleta de colores y criterio de ordenacion por defecto de los listados, quitar lo demas-->
+  <div class="row">
+    <div class="form-group col-md-6">
+      <label for="orderBy" class="col-form-label text-md-left text-color">Criterio de ordenacion de usuarios</label>
+      <select class="form-control" name="orderBy" placeholder="Criterio de ordenacion" required value='{{data.orderBy}}'>
+        {% set criterion = ["Nombre de usuario", "Nombre", "Apellido", "E-mail"] %}
+        {% set orderBy = orderBy | int %}
+        {% for x in range(4) %} 
+          {% if orderBy == x %}
+            <option  selected value="{{ x }}">{{ criterion[x] }}</option>
+          {% else %}
+            <option value="{{ x }}">{{ criterion[x] }}</option>
+          {% endif %}
+        {% endfor %}
+      </select>
+    </div>
+    <div class="form-group col-md-6">
+      <label for="rowsCant" class="col-form-label text-md-left text-color">Registros por pagina</label>
+      <input class="form-control" type="number" name="rowsCant" placeholder="Cantidad de registros" required
+        value='{{data.rowsCant}}'>
+    </div>
+    <div class="form-group col-md-12">
+      <label for="orderByMP" class="col-form-label text-md-left text-color">Criterio de ordenacion de los puntos de encuentro</label>
+      <select class="form-control" name="orderByMP" placeholder="Criterio de ordenacion" required value='{{data.orderByMP}}'>
+        {% set criterionMP = ["Nombre", "Direccion", "Telefono", "E-mail", "Latitud", "Longitud"] %}
+        {% set orderByMP = orderByMP | int %}
+        {% for x in range(6) %} 
+          {% if orderByMP == x %}
+            <option  selected value="{{ x }}">{{ criterionMP[x] }}</option>
+          {% else %}
+            <option value="{{ x }}">{{ criterionMP[x] }}</option>
+          {% endif %}
+        {% endfor %}
+      </select>
+    </div>
+  </div> 
+  <br>
+  <div>
+    <div class="d-flex justify-content-center">
+      <button type="submit" class="btn btn-primary">
+        Guardar
+      </button>
+    </div>
+
+  </div>
+</form>
+
+
+<div class="fixed-bottom d-flex justify-content-end" style="width: 30%; z-index: 1 !important; ">
+  <div id="Actualizado" class="alert alert-success alert-dismissible fade" style="width: 100%;" role="alert">
+      <strong> Se actualizo! </strong>
+  </div>
+</div>
+
+
+<script>
+  if("{{success}}"){
+    $('#Actualizado').addClass('show')
+      setTimeout(() => {
+        $('#Actualizado').removeClass('show')
+      }, 1500)
+  }
+</script>
+
+{% endblock %}
